@@ -47,5 +47,27 @@ cc_sample = credit_card.sample(frac=0.1, replace=True, random_state=1)
 cc_sample['Class'].value_counts()
 
 plt.figure(dpi=300)
-plt.scatter(cc_sample['V1'], cc_sample['V2'], c=cc_sample['Class'], s=3)
+plt.title("Scatter graph between V1 and V2")
+plt.scatter(cc_sample[cc_sample['Class']==0]['V1'], cc_sample[cc_sample['Class']==0]['V2'], s=3, c='cyan')
+plt.scatter(cc_sample[cc_sample['Class']==1]['V1'], cc_sample[cc_sample['Class']==1]['V2'], s=3, c='r')
+plt.legend(['0', '1'], title="Class")
+plt.xlabel("V1")
+plt.ylabel("V2")
+
 plt.show()
+
+#------------------------------------------------------------------------
+
+# Create training and test set
+from sklearn.model_selection import StratifiedShuffleSplit
+
+sss = StratifiedShuffleSplit(n_splits=1, train_size=0.80, test_size=0.2, random_state=123)
+for train_index, test_index in sss.split(cc_sample, cc_sample['Class']):
+    train_data = credit_card.iloc[train_index,:]
+    test_data = credit_card.iloc[test_index,:]
+    
+train_data.shape
+test_data.shape
+
+#------------------------------------------------------------------------
+
