@@ -97,7 +97,6 @@ plt.scatter(rand_jitter(oversampled_credit[oversampled_credit['Class']==1]['V1']
 plt.legend(['0', '1'], title="Class")
 plt.xlabel("V1")
 plt.ylabel("V2")
-
 plt.show()
 
 # ROS creates duplicates of fraud cases so added jitter allows you to see there are more fraud cases now
@@ -126,7 +125,6 @@ plt.scatter(rand_jitter(undersampled_credit[undersampled_credit['Class']==1]['V1
 plt.legend(['0', '1'], title="Class")
 plt.xlabel("V1")
 plt.ylabel("V2")
-
 plt.show()
 
 # Can see equal distrubtion of fraud and legit
@@ -156,5 +154,27 @@ plt.scatter(rand_jitter(sampled_credit[sampled_credit['Class']==1]['V1']), rand_
 plt.legend(['0', '1'], title="Class")
 plt.xlabel("V1")
 plt.ylabel("V2")
-
 plt.show()
+
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# Balance dataset with SMOTE method
+from imblearn.over_sampling import SMOTE 
+
+train_data['Class'].value_counts()
+new_legit_fraction = 0.6
+
+sm = SMOTE(random_state=123, sampling_strategy=(1-new_legit_fraction)/new_legit_fraction)
+SMOTE_credit, y_resampled = sm.fit_resample(train_data.iloc[:,1:], train_data['Class']) # remvoed time sample
+
+SMOTE_credit['Class'].value_counts() # 60% of data now legit, 40% fraud
+
+plt.figure(dpi=300)
+plt.title("Scatter graph between V1 and V2 (SMOTE)")
+plt.scatter(SMOTE_credit[SMOTE_credit['Class']==0]['V1'], SMOTE_credit[SMOTE_credit['Class']==0]['V2'], s=3, c='cyan')
+plt.scatter(SMOTE_credit[SMOTE_credit['Class']==1]['V1'], SMOTE_credit[SMOTE_credit['Class']==1]['V2'], s=3, c='r')
+plt.legend(['0', '1'], title="Class")
+plt.xlabel("V1")
+plt.ylabel("V2")
+plt.show()
+
