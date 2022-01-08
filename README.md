@@ -1,0 +1,5 @@
+I created this machine learning project to detect fraudulent credit card transactions. I trained my model using real world credit card transaction data. I created a model to predict whether a transaction is fraudulent or not when given the 28 principal features which are associated with every transaction. The data is highly imbalanced as only small percentage of the transactions are fraudulent, so before training my model I needed to balance the dataset.
+
+Using sklearn and imblearn packages in python I have created samples using ROS, ROS and SMOTE methods to create a more balanced dataset. I then used the SMOTE sample with the DecisionTreeClassifier method from sklearn to create a model to predict whether transactions were legitimate or fraudulent and tested the model on the test data sample as well as the entire dataset to see find the accuracy of my model. I also trained the model using the imbalanced training dataset to show the differences between using balanced data and imbalanced when training a machine learning model.
+
+The dataset can be found here: https://www.kaggle.com/mlg-ulb/creditcardfraud.
