@@ -61,7 +61,7 @@ plt.show()
 # Create training and test set
 from sklearn.model_selection import StratifiedShuffleSplit
 
-sss = StratifiedShuffleSplit(n_splits=1, train_size=0.80, test_size=0.2, random_state=123)
+sss = StratifiedShuffleSplit(n_splits=1, train_size=0.80, test_size=0.2, random_state=123) # 80% training and 20% test
 for train_index, test_index in sss.split(cc_sample, cc_sample['Class']):
     train_data = credit_card.iloc[train_index,:]
     test_data = credit_card.iloc[test_index,:]
@@ -165,7 +165,7 @@ train_data['Class'].value_counts()
 new_legit_fraction = 0.6
 
 sm = SMOTE(random_state=123, sampling_strategy=(1-new_legit_fraction)/new_legit_fraction)
-SMOTE_credit, y_resampled = sm.fit_resample(train_data.iloc[:,1:], train_data['Class']) # remvoed time sample
+SMOTE_credit, y_resampled = sm.fit_resample(train_data.iloc[:,1:], train_data['Class']) # removed Time feature from sample
 
 SMOTE_credit['Class'].value_counts() # 60% of data now legit, 40% fraud
 
@@ -177,4 +177,134 @@ plt.legend(['0', '1'], title="Class")
 plt.xlabel("V1")
 plt.ylabel("V2")
 plt.show()
+
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# Decision Tree using SMOTE data
+
+from sklearn.tree import DecisionTreeClassifier, export_graphviz
+from io import StringIO
+from IPython.display import Image
+import pydotplus
+
+clf = DecisionTreeClassifier(random_state=1).fit(SMOTE_credit.drop(['Class'], axis=1), SMOTE_credit['Class']) # create the decision tree using SMOTE sample
+
+out = StringIO()
+dt_target_names  = SMOTE_credit.drop(['Class'], axis=1).columns
+export_graphviz(clf, out_file=out,  
+                     class_names=dt_target_names, label = 'none', filled=True, rounded=True, special_characters=True)
+
+graph=pydotplus.graph_from_dot_data(out.getvalue())
+Image(graph.create_png()) # require GraphViz to display the decision tree
+
+# Predict fraudulent cases
+Prediction_values = clf.predict(test_data.drop(['Class','Time'], axis=1)) # predict using decision tree and test data
+unique, counts = np.unique(Prediction_values, return_counts=True)
+np.asarray((unique, counts)).T
+
+# Build confusion matrix
+Model_conf_mat = sklm.confusion_matrix(test_data['Class'], Prediction_values)
+print(Model_conf_mat)
+
+print(sklm.classification_report(test_data['Class'], Prediction_values, zero_division=False, digits=4))
+print("Accuracy:", sklm.accuracy_score(test_data['Class'], Prediction_values))
+# We have a good accuracy of around from SMOTE sample 0.998
+
+clf_SMOTE = clf
+
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# Decision Tree on unbalanced training data
+
+train_data = train_data.drop(['Time'], axis=1)
+clf = DecisionTreeClassifier(random_state=1).fit(train_data.drop(['Class'], axis=1), train_data['Class']) # create the decision tree using train_data sample
+
+out = StringIO()
+dt_target_names  = train_data.drop(['Class'], axis=1).columns
+export_graphviz(clf, out_file=out,  
+                     class_names=dt_target_names, label = 'none', filled=True, rounded=True, special_characters=True)
+
+graph=pydotplus.graph_from_dot_data(out.getvalue())
+Image(graph.create_png()) # require GraphViz to display the decision tree
+
+# Predict fraudulent cases
+Prediction_values = clf.predict(test_data.drop(['Class','Time'], axis=1)) # predict using decision tree and test data
+unique, counts = np.unique(Prediction_values, return_counts=True)
+np.asarray((unique, counts)).T
+
+# Build confusion matrix
+Model_conf_mat = sklm.confusion_matrix(test_data['Class'], Prediction_values)
+print(Model_conf_mat)
+
+print(sklm.classification_report(test_data['Class'], Prediction_values, zero_division=False, digits=4))
+print("Accuracy:", sklm.accuracy_score(test_data['Class'], Prediction_values))
+
+# Accuracy from train data is better at around 0.999
+
+clf_train = clf
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# Predict for the whole credit_card data set using SMOTE sample prediction
+
+# Predict fraudulent cases
+Prediction_values = clf_SMOTE.predict(credit_card.drop(['Class','Time'], axis=1)) # predict using decision tree and test data
+unique, counts = np.unique(Prediction_values, return_counts=True)
+np.asarray((unique, counts)).T
+
+# Build confusion matrix
+Model_conf_mat = sklm.confusion_matrix(credit_card['Class'], Prediction_values)
+print(Model_conf_mat)
+
+print(sklm.classification_report(credit_card['Class'], Prediction_values, zero_division=False, digits=4))
+print("Accuracy:", sklm.accuracy_score(credit_card['Class'], Prediction_values))
+
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# Predict for the whole credit_card data set using train_data sample prediction
+
+# Predict fraudulent cases
+Prediction_values = clf_train.predict(credit_card.drop(['Class','Time'], axis=1)) # predict using decision tree and test data
+unique, counts = np.unique(Prediction_values, return_counts=True)
+np.asarray((unique, counts)).T
+
+# Build confusion matrix
+Model_conf_mat = sklm.confusion_matrix(credit_card['Class'], Prediction_values)
+print(Model_conf_mat)
+
+print(sklm.classification_report(credit_card['Class'], Prediction_values, zero_division=False, digits=4))
+print("Accuracy:", sklm.accuracy_score(credit_card['Class'], Prediction_values))
+
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# Using the two sections above we can compare the predictions based on the balanced SMOTE sample
+# and the prediction based on the unbalanced training data to see which is more accurate using this model
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
